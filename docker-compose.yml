@@ -12,9 +12,12 @@ services:
     entrypoint: ["/bin/sh", "-c", "./scripts/init_tasks.sh & go run main.go"]
     volumes:
       - ./scripts/init_tasks.sh:/init_tasks.sh
+    container_name: api-container # Specify the container name
 
   redis:
     image: redis:latest
     ports:
       - 6379:6379
-    volumes: [] # Ensure no data volume is mounted
+    tmpfs:
+      - /data  # Mount the Redis data directory in tmpfs (in-memory)
+    container_name: redis-container # Specify the container name

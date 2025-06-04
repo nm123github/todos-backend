@@ -33,27 +33,16 @@ func NewMux(handler *tasks.TaskHandler) http.Handler {
 	mux := http.NewServeMux()
 
 	// Handler for /task (LIST and CREATE)
-	mux.HandleFunc("/task", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			handler.ListTask(w, r)
-		case http.MethodPost:
-			handler.CreateTask(w, r)
-		default:
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("GET /task", handler.ListTask)
+	mux.HandleFunc("POST /task", handler.CreateTask)
 
 	// Handler for /task/ (UPDATE and DELETE specific tasks)
-	mux.HandleFunc("/task/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPut:
-			handler.UpdateTask(w, r)
-		case http.MethodDelete:
-			handler.DeleteTask(w, r)
-		default:
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		}
+	mux.HandleFunc("UPDATE /task", handler.UpdateTask)
+	mux.HandleFunc("DELETE /task", handler.DeleteTask)
+
+	// Default handler for unknown routes
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", http.StatusNotFound)
 	})
 
 	// Wrap the mux with CORS middleware

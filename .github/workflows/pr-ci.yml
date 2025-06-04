@@ -1,0 +1,55 @@
+name: PR (CI) Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      NX_TODO_BACKEND_HOST: http://localhost:8080
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Web Repo
+        uses: actions/checkout@v4
+        with:
+          repository: nm123github/todos-frontend
+          ref: main
+          ssh-key: ${{ secrets.WEB_REPO_DEPLOY_KEY }}
+          path: web-repo
+
+      - name: Set up Docker Compose
+        run: |
+          docker compose -f docker-compose.yml up -d
+
+      - name: Corepack Enable
+        run: |
+          corepack enable && corepack prepare yarn@4.5.3 --activate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23.5.0
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: |
+          yarn install --immutable
+        working-directory: web-repo
+
+      - name: Install Playwright
+        run: |
+          yarn playwright install --with-deps chromium
+        working-directory: web-repo
+
+      - name: Run Playwright Tests
+        run: |
+          yarn e2e
+        working-directory: web-repo
+
+      - name: Clean Up
+        run: |
+          docker compose -f docker-compose.yml down

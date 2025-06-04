@@ -25,6 +25,7 @@ jobs:
       - name: Set up Docker Compose
         run: |
           docker compose -f docker-compose.yml up -d
+          docker compose -f web-repo/docker-compose.yml up -d
 
       - name: Corepack Enable
         run: |
@@ -54,3 +55,4 @@ jobs:
       - name: Clean Up
         run: |
           docker compose -f docker-compose.yml down
+          docker compose -f web-repo/docker-compose.yml down

@@ -34,7 +34,7 @@ func NewMux(handler *tasks.TaskHandler) http.Handler {
 
 	// Handler for /task (LIST and CREATE)
 	mux.HandleFunc("GET /task", handler.ListTask)
-	// mux.HandleFunc("POST /task", handler.CreateTask)
+	mux.HandleFunc("POST /task", handler.CreateTask)
 
 	// Handler for /task/ (UPDATE and DELETE specific tasks)
 	mux.HandleFunc("UPDATE /task", handler.UpdateTask)

@@ -28,8 +28,8 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// NewMux creates the HTTP request multiplexer and wraps it with middleware.
-func NewMux(handler *tasks.TaskHandler) http.Handler {
+// NewMux creates the HTTP request multiplexer.
+func NewMux(handler *tasks.TaskHandler) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Handler for /task (LIST and CREATE)
@@ -45,8 +45,16 @@ func NewMux(handler *tasks.TaskHandler) http.Handler {
 		http.Error(w, "Not Found", http.StatusNotFound)
 	})
 
-	// Wrap the mux with CORS middleware
-	return CORSMiddleware(mux)
+	return mux
+}
+
+// WithMiddleware applies middleware to the provided mux and returns the wrapped handler.
+func WithMiddleware(mux *http.ServeMux, middleware ...func(http.Handler) http.Handler) http.Handler {
+	var h http.Handler = mux
+	for _, m := range middleware {
+		h = m(h)
+	}
+	return h
 }
 
 // StartServer starts the HTTP server with lifecycle management.
@@ -55,7 +63,9 @@ func StartServer(lc fx.Lifecycle, handler *tasks.TaskHandler) {
 		OnStart: func(ctx context.Context) error {
 			go func() {
 				log.Println("Starting server on :8080")
-				if err := http.ListenAndServe(":8080", NewMux(handler)); err != nil {
+				mux := NewMux(handler)
+				handlerWithMiddleware := WithMiddleware(mux, CORSMiddleware)
+				if err := http.ListenAndServe(":8080", handlerWithMiddleware); err != nil {
 					log.Fatalf("Server failed: %v", err)
 				}
 			}()

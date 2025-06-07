@@ -37,8 +37,8 @@ func NewMux(handler *tasks.TaskHandler) *http.ServeMux {
 	mux.HandleFunc("POST /task", handler.CreateTask)
 
 	// Handler for /task/ (UPDATE and DELETE specific tasks)
-	mux.HandleFunc("UPDATE /task", handler.UpdateTask)
-	mux.HandleFunc("DELETE /task", handler.DeleteTask)
+	mux.HandleFunc("PUT /task/", handler.UpdateTask)
+	mux.HandleFunc("DELETE /task/", handler.DeleteTask)
 
 	// Default handler for unknown routes
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
